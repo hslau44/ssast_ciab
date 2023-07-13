@@ -123,14 +123,14 @@ def threshold_att(attentions, nh, audio_model, args):
     th_attn = th_attn.float()
     return th_attn
 
-def plot_attentions(attensions, fbank, nh, mean, std, batch_num=0):
+def plot_attentions(attensions, fbank, nh, mean, std, batch_num=0, folder='.'):
     fig, axs = plt.subplots(nh+1,1, figsize=(8,20), sharex=True)
     axs[0].imshow(fbank[batch_num].T)
     for i in range(nh):
         #plot for each head
         axs[i+1].imshow(attensions[i])
     print('Here is the filter bank of the recorded audio along with the attention weights for the final layer CLS token of the 12 attention heads.')
-    plt.savefig('/content/demo/attentions_0_pos.png', bbox_inches='tight')
+    plt.savefig(os.path.join(folder,'attentions_0_pos.png'), bbox_inches='tight')
     plt.show()
 
 def plot_attentions_overlay(attensions, fbank, nh, mean, std, batch_num=0, axs=None):
@@ -183,7 +183,7 @@ def convert_attention_map(attention, spectrum):
     new[1::2] = attention
     return new
 
-def sonfiy_attention(attention, waveform, batch_num, args, name):
+def sonfiy_attention(attention, waveform, batch_num, args, name, folder):
     '''
     given the attetion map sonficy the attention portions
     '''
@@ -199,15 +199,15 @@ def sonfiy_attention(attention, waveform, batch_num, args, name):
                                          hop_length=window_shift)
 
     att_wav = t(spectrum_att.T)
-    torchaudio.save(f'/content/demo/{name}waveform.wav', waveform, 16000)
-    torchaudio.save(f'/content/demo/{name}atten_recon.wav', att_wav.view(1,-1), 16000)
+    torchaudio.save(os.path.join(folder,f'{name}waveform.wav'), waveform, 16000)
+    torchaudio.save(os.path.join(folder,f'{name}atten_recon.wav'), att_wav.view(1,-1), 16000)
     fig, axs = plt.subplots()
     print('Here we can see the parts of the spectrogram which the model classification token in the final layer paid the most attention to')
     print('You can also have a listen to this part of the signal by downloading the atten_recon.wav file')
     axs.set_xlabel('Time (10ms)')
     axs.set_ylabel('Frequency bin')
     axs.imshow(spectrum_att.abs().T)
-    plt.savefig(f'/content/demo/{name}spectrum_att.png', bbox_inches='tight')
+    plt.savefig(os.path.join(folder,f'{name}spectrum_att.png'), bbox_inches='tight')
 
 def select_areas(spectrum, attention):
     attention = torch.tensor(attention)
@@ -260,7 +260,7 @@ def spectrogram_rep(waveform, args):
     return spectrum, window_shift, window_size
 
 
-def main_demo(model_path, audio_path, method='patch', name='harry'):
+def main_demo(model_path, folder, audio_file, method='patch', name='harry'):
     batch_num = 0 # as only one sample in batch
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f'using: {device}')
@@ -270,21 +270,22 @@ def main_demo(model_path, audio_path, method='patch', name='harry'):
     elif args.loss == 'CE':
         args.loss_fn = torch.nn.CrossEntropyLoss()
     args.batch_size = 50
+    audio_path = os.path.join(folder, audio_file)
     waveform, fbank = prep_audio(audio_path, name, args)
     fig, axs = plt.subplots(1,1, figsize=(8,20), sharex=True)
     axs.imshow(fbank.T)
     axs.axis('off')
-    plt.savefig(f'/content/demo/fbank.png', bbox_inches='tight')
+    plt.savefig(os.path.join(folder,'fbank.png'), bbox_inches='tight')
     plt.close()
     fig, axs = plt.subplots(1,1, figsize=(8,20), sharex=True)
     axs.imshow(waveform)
     axs.axis('off')
-    plt.savefig(f'/content/demo/waveform.png', bbox_inches='tight')
+    plt.savefig(os.path.join(folder,'waveform.png'), bbox_inches='tight')
     plt.close()
     fbank = fbank.unsqueeze(0)# adding a batch dim
     attention, _, pca_proj = get_attention(audio_model, fbank, device, args)
     attentions, nh = format_attention_map(attention, audio_model, method, args, threshold_att_maps=False, batch_num=batch_num)
-    plot_attentions(attentions, fbank, nh, args.dataset_mean, args.dataset_std, batch_num)
+    plot_attentions(attentions, fbank, nh, args.dataset_mean, args.dataset_std, batch_num, folder=folder)
     plt.close()
 
     fig, axs = plt.subplots(2,1, sharex=True)
@@ -305,10 +306,11 @@ def main_demo(model_path, audio_path, method='patch', name='harry'):
     attention_1, fbank_1, pca_proj_1 = get_attention(audio_model, fbank, device, args)
     logits_per_patch(audio_model, device, pca_proj_1, axs[1], batch_num=batch_num)
 
-    plt.savefig(f'/content/demo/attention_maps_logits_batchnum_{name}.png', bbox_inches='tight')
+    attention_maps_filepath = os.path.join(folder,f'attention_maps_logits_batchnum_{name}.png')
+    plt.savefig(attention_maps_filepath, bbox_inches='tight')
     print('Here we see a summary of where the 12 attention heads were allocating a lot of weight when creating the CLS (classifcation token)')
     print('along with the corresponding COVID-19 prediction/logit per timestep')
     plt.show()
     plt.close()
 
-    sonfiy_attention(attentions, waveform, batch_num, args, name=name)
+    sonfiy_attention(attentions, waveform, batch_num, args, name=name, folder=folder)

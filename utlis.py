@@ -59,36 +59,45 @@ def get_time():
     return x
 
 
-def write_audio(audio, sr, participant_id, folder):
-    filepath = os.path.join(folder, participant_id)
-    Path(filepath).mkdir(parents=True, exist_ok=True)
+def write_audio(audio, sr, folder):
     audio_filename = get_time() + '.wav'
-    wav_write(os.path.join(filepath, audio_filename), sr, audio)
-    return filepath, audio_filename
+    wav_write(os.path.join(folder, audio_filename), sr, audio)
+    return audio_filename
 
 
-def download_model(modality):
+def download_model(modality, folder):
     folder_link = MODEL_MODALITY_GDLINK[modality]
     gdown.download_folder(
         folder_link, 
         quiet=True, 
         use_cookies=False, 
-        output=CONTENT_FOLDER,
+        output=folder,
     )
+    return os.path.join(folder,modality)
+
+
+def setup_folder(participant_id=None):
+    Path(DEMO_FOLDER).mkdir(parents=True, exist_ok=True)
+    if participant_id is not None:
+        folder = os.path.join(DEMO_FOLDER, participant_id)
+        Path(folder).mkdir(parents=True, exist_ok=True)
+        return folder
+    else:
+        return DEMO_FOLDER
 
 
 def main(data):
-    # setup folders
-    Path(DEMO_FOLDER).mkdir(parents=True, exist_ok=True)
     # process data from frontend
     binary, participant_id, modality = process_data(data)
+    folder = setup_folder(participant_id)
     # decode binary aas wav and save file
     audio, sr = binary2wav(binary)
-    filepath, audio_filename = write_audio(audio, sr, participant_id)
+    audio_file = write_audio(audio, sr, folder)
     # download model accordingly 
     download_model(modality)
     # run demo
-    main_demo(mdl_folder, filepath, audio_filename, name=participant_id)
+    name =  participant_id if participant_id is not None else 'participant'
+    main_demo(mdl_folder, folder, audio_file, name=name)
     
 
 

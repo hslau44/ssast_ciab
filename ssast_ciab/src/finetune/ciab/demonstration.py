@@ -313,4 +313,4 @@ def main_demo(model_path, folder, audio_file, method='patch', name='harry'):
     plt.show()
     plt.close()
 
-    sonfiy_attention(attentions, waveform, batch_num, args, name=name, folder=folder)
+    # sonfiy_attention(attentions, waveform, batch_num, args, name=name, folder=folder)

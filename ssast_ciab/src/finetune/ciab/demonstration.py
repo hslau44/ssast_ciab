@@ -123,15 +123,19 @@ def threshold_att(attentions, nh, audio_model, args):
     th_attn = th_attn.float()
     return th_attn
 
-def plot_attentions(attensions, fbank, nh, mean, std, batch_num=0, folder='.'):
+def plot_attentions(attensions, fbank, nh, mean, std, batch_num=0, folder='.', result=None):
+    result['attention'] = {}
     fig, axs = plt.subplots(nh+1,1, figsize=(8,20), sharex=True)
     axs[0].imshow(fbank[batch_num].T)
+    result['attention'][0] = fbank[batch_num].T
     for i in range(nh):
         #plot for each head
         axs[i+1].imshow(attensions[i])
+        result['attention'][i+1] = attensions[i]
     print('Here is the filter bank of the recorded audio along with the attention weights for the final layer CLS token of the 12 attention heads.')
     plt.savefig(os.path.join(folder,'attentions_0_pos.png'), bbox_inches='tight')
     plt.show()
+    
 
 def plot_attentions_overlay(attensions, fbank, nh, mean, std, batch_num=0, axs=None):
     out = []
@@ -162,6 +166,7 @@ def logits_per_patch(audio_model, device, pca_proj, ax, batch_num):
     audio_model.eval()
     with torch.no_grad():
         logits = torch.nn.functional.softmax(audio_model.module.mlp_head(pca_proj[batch_num,:,:]))
+    prediction = logits[2:,1].tolist()
     out = ax.plot(range(0, len(logits[2:,1].tolist())), logits[2:,1].tolist())
     ax.set_ylim(0,1)
     ax.fill_between(range(0, len(logits[2:,1].tolist())), 0.5, 1, facecolor='red', alpha=0.4, label='COVID Positive')
@@ -169,7 +174,7 @@ def logits_per_patch(audio_model, device, pca_proj, ax, batch_num):
     ax.set_xlabel('Time (10ms)')
     ax.set_ylabel('Logit')
     ax.legend()
-    return out
+    return prediction
 
 
 
@@ -261,6 +266,7 @@ def spectrogram_rep(waveform, args):
 
 
 def main_demo(model_path, folder, audio_file, method='patch', name='harry'):
+    result = {}
     batch_num = 0 # as only one sample in batch
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f'using: {device}')
@@ -277,20 +283,23 @@ def main_demo(model_path, folder, audio_file, method='patch', name='harry'):
     axs.axis('off')
     plt.savefig(os.path.join(folder,'fbank.png'), bbox_inches='tight')
     plt.close()
+    result['fbank'] = fbank
     fig, axs = plt.subplots(1,1, figsize=(8,20), sharex=True)
     axs.imshow(waveform)
     axs.axis('off')
     plt.savefig(os.path.join(folder,'waveform.png'), bbox_inches='tight')
     plt.close()
+    result['waveform'] = waveform
     fbank = fbank.unsqueeze(0)# adding a batch dim
     attention, _, pca_proj = get_attention(audio_model, fbank, device, args)
     attentions, nh = format_attention_map(attention, audio_model, method, args, threshold_att_maps=False, batch_num=batch_num)
-    plot_attentions(attentions, fbank, nh, args.dataset_mean, args.dataset_std, batch_num, folder=folder)
+    plot_attentions(attentions, fbank, nh, args.dataset_mean, args.dataset_std, batch_num, folder=folder, result=result)
     plt.close()
 
     fig, axs = plt.subplots(2,1, sharex=True)
     attentions, nh = format_attention_map(attention, audio_model, method, args, threshold_att_maps=True, batch_num=batch_num)
-    plot_attentions_overlay(attentions, fbank, nh, args.dataset_mean, args.dataset_std, batch_num=batch_num, axs=axs[0])
+    out1 = plot_attentions_overlay(attentions, fbank, nh, args.dataset_mean, args.dataset_std, batch_num=batch_num, axs=axs[0])
+    result['attentions_overlay'] = out1
 
     #get logits per time step
     audio_model, args = load_trained_model(
@@ -304,7 +313,8 @@ def main_demo(model_path, folder, audio_file, method='patch', name='harry'):
         args.loss_fn = torch.nn.CrossEntropyLoss()
     args.batch_size = 50
     attention_1, fbank_1, pca_proj_1 = get_attention(audio_model, fbank, device, args)
-    logits_per_patch(audio_model, device, pca_proj_1, axs[1], batch_num=batch_num)
+    out2 = logits_per_patch(audio_model, device, pca_proj_1, axs[1], batch_num=batch_num)
+    result['prediction'] = out2
 
     attention_maps_filepath = os.path.join(folder,f'attention_maps_logits_batchnum_{name}.png')
     plt.savefig(attention_maps_filepath, bbox_inches='tight')
@@ -314,3 +324,4 @@ def main_demo(model_path, folder, audio_file, method='patch', name='harry'):
     plt.close()
 
     # sonfiy_attention(attentions, waveform, batch_num, args, name=name, folder=folder)
+    return result

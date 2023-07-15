@@ -15,3 +15,4 @@ ffmpeg-python
 Js2Py
 gdown
 librosa
+streamlit

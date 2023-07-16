@@ -1,3 +1,5 @@
+import os
+import sys
 import numpy as np
 import streamlit as st
 import time
@@ -10,7 +12,8 @@ def run(inputs):
     mdl_folder = download_model(inputs['modal'], folder=CONTENT_FOLDER)
     audio = binary2wav(inputs['audio'])
     audio_file = write_audio(audio, sr=16000, folder=audio_folder)
-    results = main_demo(mdl_folder, audio_folder, audio_file, name=inputs['name'])
+    # results = main_demo(mdl_folder, audio_folder, audio_file, name=inputs['name'])
+    results = {'audio_file': audio_file}
     return results
 
 
@@ -46,7 +49,7 @@ if b:
     
     if result == True:
         with st.spinner(text='In progress'):
-            c = fake_process(**inputs)
+            c = run(inputs)
         st.header('Result')
         st.write(c)
     else:

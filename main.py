@@ -31,6 +31,27 @@ MODEL_MODALITY_GDLINK = {
    'three_cough': "https://drive.google.com/drive/folders/1FszBlApEzEcdVNMKdHZx8i9hYB2pbtH6?usp=share_link",
 }
 
+MODAL_TEXT = """
+**Sentence**: Record a sentence “I love nothing more than an afternoon cream tea.” This sentence contains\
+      some key sounds (‘aaah’, ‘oooh’, ‘eee’) which may help to indicate your respiratory health Press \
+        the Record button, and read the following sentence: “I love nothing more than an afternoon cream \
+            tea.” Use the Stop button to stop recording.
+
+**Exhalation**: Record a 'ha' sound Please make this recording in a quiet environment. Press the Record \
+    button, and breathe out loudly three times, making a ‘ha’ sound, as if you were trying to fog up a \
+        window, or see your breath in cold weather. Use the Stop button to stop recording. You will see \
+            an audio player, which you can use to playback your recording. Breathe out loudly three \
+                times, making a ‘ha’ sound, as if you were trying to fog up a window, or see your breathz
+                  in cold weather. Press the Record button to begin recording
+
+**Cough**: Record a cough. Coughing is a potential risk to others around you. Make sure you are alone\
+      in a room or vehicle when coughing. For this recording, move an arm’s length away from your \
+        desktop computer, laptop, phone or tablet. Press the Record button, and cough, forcing a cough\
+              if it doesn’t come naturally. Use the Stop button to stop recording. You will see an audio\
+                  player, which you can use to playback your recording. Cough once — with your desktop \
+                    computer, laptop, phone or tablet an arm’s length away from you.
+"""
+
 
 def get_time():
     x = datetime.datetime.now()
@@ -131,10 +152,75 @@ if __name__ == "__main__":
 
     st.title("COVID 19 Sound Detect")
 
+    st.write("**WARNING: This is NOT a COVID-19 diagnostic test, this demo is \
+             purely educational, does not provide any medical recommendation nor\
+              should any action be taken following use**")
+    
+    st.markdown("This app is a demonstration of the Audio-based AI classifiers \
+             developed by the Alan Turning Institute and the UK Health Security\
+             Agency, you can find the original source [here](https://colab.research.google.com/drive/1Hdy2H6lrfEocUBfz3LoC5EDJrJr2GXpu?usp=sharing#scrollTo=giQTg9YoGBpI).")
+    
+    st.header("Instruction")
+
+    st.markdown("**1. Provide your name below:**")
+    
     inputs = {}
-    inputs['name'] = st.text_input('Enter your name')
-    inputs['modal'] = st.selectbox('Select the type of sample:', ['sentence', 'cough', 'exhalation'])
+    inputs['name'] = st.text_input('Name')
+
+    st.text(' ')
+    
+    st.markdown("**2. Select one of the three modalities below.**") 
+    
+    st.markdown("Depending on your selection please \
+                follow instructions of the tabs to make your \
+                recording in the next step.")
+    
+    tab1, tab2, tab3 = st.tabs(['sentence', 'cough', 'exhalation'])
+
+    tab1.write("Record a sentence “I love nothing more than an \
+               afternoon cream tea.” This sentence contains some key sounds \
+               (‘aaah’, ‘oooh’, ‘eee’) which may help to indicate your \
+               respiratory health Press the Record button, and read the \
+               following sentence: “I love nothing more than an afternoon \
+               cream tea.”")
+    
+    tab2.write("Record a 'ha' sound Please make this\
+                recording in a quiet environment. Press the Record \
+                button, and breathe out loudly three times, making a ‘ha’ \
+                sound, as if you were trying to fog up a window, or see \
+                your breath in cold weather. Use the Stop button to stop \
+                recording. You will see an audio player, which you can use \
+                to playback your recording. Breathe out loudly three times, \
+                making a ‘ha’ sound, as if you were trying to fog up a\
+                window, or see your breath in cold weather.")
+
+    tab3.write("Record a cough. Coughing is a potential risk to \
+                others around you. Make sure you are alone in a room or \
+                vehicle when coughing. For this recording, move an arm’s \
+                length away from your desktop computer, laptop, phone or \
+                tablet. Press the Record button, and cough, forcing a cough \
+                if it doesn’t come naturally. Use the Stop button to stop \
+                recording. You will see an audio player, which you can use \
+                to playback your recording. Cough once — with your desktop \
+                computer, laptop, phone or tablet an arm’s length away from \
+                you.")
+    
+
+    inputs['modal'] = st.selectbox(
+        'Modality', 
+        ['sentence', 'cough', 'exhalation']
+    )
+
+    st.text(' ')
+
+    st.markdown("**3. Select the buttoms to make your recording:**")
+
     inputs['audio'] = st_audiorec()
+
+    st.text(' ')
+
+    st.markdown("**4. Click 'Predict', it will take about \
+                5 minutes to complete and show the results.**")
 
     b = st.button('Predict')
 

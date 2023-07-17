@@ -53,6 +53,16 @@ MODAL_TEXT = """
 """
 
 
+RESULT_KEY_TEXTS = {
+    "waveform":'Here is the waveform representation of your voice sample',
+    "prediction":"The AI employs a very interesting algorithm called 'Attention', as the named suggested\
+        the model learnt to pay attention to specific timestep of your voice to make prediction, the 1st\
+        figure shows parts of the spectrogram paid the most attention to, highlighted in color\nAnd the\
+        2nd figure shows the COVID prediction/logit for each timestep, where logit > 0.5 is considered as\
+        'Positive'.",
+}
+
+
 def get_time():
     x = datetime.datetime.now()
     x = x.strftime("%m-%d_%H-%M")
@@ -231,9 +241,10 @@ if __name__ == "__main__":
             with st.spinner(text='In progress'):
                 c = run(inputs)
             st.header('Result')
-            for k in ["waveform","fbank","attentions","prediction"]:
+            for k, text in RESULT_KEY_TEXTS.items():
                 if k in c.keys():
-                    st.write(k)
+                    st.subheader(k)
+                    st.write(text)
                     st.image(c[k])
         else:
             st.write(message)

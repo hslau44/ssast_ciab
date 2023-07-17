@@ -73,14 +73,15 @@ def write_audio(audio, sr, folder):
 
 def download_model(modality, folder):
     mdl_path = os.path.join(folder,modality)
-    Path(mdl_path).mkdir(parents=True, exist_ok=True)
-    folder_link = MODEL_MODALITY_GDLINK[modality]
-    gdown.download_folder(
-        folder_link, 
-        quiet=True, 
-        use_cookies=False, 
-        output=mdl_path,
-    )
+    if not os.path.exists(mdl_path):
+        Path(mdl_path).mkdir(parents=True, exist_ok=True)
+        folder_link = MODEL_MODALITY_GDLINK[modality]
+        gdown.download_folder(
+            folder_link, 
+            quiet=True, 
+            use_cookies=False, 
+            output=mdl_path,
+        )
     return mdl_path
 
 

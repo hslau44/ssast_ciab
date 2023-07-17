@@ -125,22 +125,24 @@ def run(inputs, verbose=False):
     return results
 
 
-st.title("COVID 19 Sound Detect")
+if __name__ == "__main__":
 
-inputs = {}
-inputs['name'] = st.text_input('Enter your name')
-inputs['modal'] = st.selectbox('Select the type of sample:', ['sentence', 'cough', 'exhalation'])
-inputs['audio'] = st_audiorec()
+    st.title("COVID 19 Sound Detect")
 
-b = st.button('Predict')
+    inputs = {}
+    inputs['name'] = st.text_input('Enter your name')
+    inputs['modal'] = st.selectbox('Select the type of sample:', ['sentence', 'cough', 'exhalation'])
+    inputs['audio'] = st_audiorec()
 
-if b:
-    result, message = check_inputs(**inputs)
-    
-    if result == True:
-        with st.spinner(text='In progress'):
-            c = run(inputs, verbose=True)
-        st.header('Result')
-        st.write(c)
-    else:
-        st.write(message)
+    b = st.button('Predict')
+
+    if b:
+        result, message = check_inputs(**inputs)
+        
+        if result == True:
+            with st.spinner(text='In progress'):
+                c = run(inputs, verbose=True)
+            st.header('Result')
+            st.write(c)
+        else:
+            st.write(message)

@@ -145,6 +145,9 @@ if __name__ == "__main__":
             with st.spinner(text='In progress'):
                 c = run(inputs)
             st.header('Result')
-            st.write(c)
+            for k in ["waveform","fbank","attentions","prediction"]:
+                if k in c.keys():
+                    st.write(k)
+                    st.image(c[k])
         else:
             st.write(message)

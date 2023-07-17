@@ -112,17 +112,18 @@ def fake_process(**kwargs):
     return outputs
 
 
-def run(inputs, verbose=False):
-    print('Set up folder') if verbose else 0
+def run(inputs, **kwargs):
+
     audio_folder = setup_folder()
-    print('Decoding binary')  if verbose else 0
+
     audio, sr = binary2wav(inputs['audio'])
-    print('Saving audio')  if verbose else 0
+
     audio_file = write_audio(audio, sr=sr, folder=audio_folder)
-    print('Download model')  if verbose else 0
+
     mdl_folder = download_model(inputs['modal'], folder=CONTENT_FOLDER)
-    # results = main_demo(mdl_folder, audio_folder, audio_file, name=inputs['name'])
-    results = {'audio_file': audio_file}
+
+    results = main_demo(mdl_folder, audio_folder, audio_file, name=inputs['name'])
+
     return results
 
 
@@ -142,7 +143,7 @@ if __name__ == "__main__":
         
         if result == True:
             with st.spinner(text='In progress'):
-                c = run(inputs, verbose=True)
+                c = run(inputs)
             st.header('Result')
             st.write(c)
         else:

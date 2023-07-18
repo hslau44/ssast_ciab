@@ -68,6 +68,9 @@ def get_time():
     x = x.strftime("%m-%d_%H-%M")
     return x
 
+def get_pid(name):
+    return ''.join(e for e in name if e.isalnum())
+
 
 def binary2wav(data):
     # binary = b64decode(data)
@@ -96,8 +99,8 @@ def binary2wav(data):
     return audio, sr
 
 
-def write_audio(audio, sr, folder):
-    audio_filename = get_time() + '.wav'
+def write_audio(audio, sr, folder, name):
+    audio_filename = name + '.wav'
     wav_write(os.path.join(folder, audio_filename), sr, audio)
     return audio_filename
 
@@ -116,10 +119,11 @@ def download_model(modality, folder):
     return mdl_path
 
 
-def setup_folder(participant_id=None):
+def setup_folder(name=None):
     Path(DEMO_FOLDER).mkdir(parents=True, exist_ok=True)
-    if participant_id is not None:
-        folder = os.path.join(DEMO_FOLDER, participant_id)
+    if name is not None:
+        pid = get_pid(name)
+        folder = os.path.join(DEMO_FOLDER, pid)
         Path(folder).mkdir(parents=True, exist_ok=True)
         return folder
     else:
@@ -145,15 +149,17 @@ def fake_process(**kwargs):
 
 def run(inputs, **kwargs):
 
+    pid = get_pid(inputs['name'])
+
     audio_folder = setup_folder()
 
     audio, sr = binary2wav(inputs['audio'])
 
-    audio_file = write_audio(audio, sr=sr, folder=audio_folder)
+    audio_file = write_audio(audio, sr=sr, folder=audio_folder, name=pid)
 
     mdl_folder = download_model(inputs['modal'], folder=CONTENT_FOLDER)
 
-    results = main_demo(mdl_folder, audio_folder, audio_file, name=inputs['name'])
+    results = main_demo(mdl_folder, audio_folder, audio_file, name=pid)
 
     return results
 

@@ -191,7 +191,7 @@ if __name__ == "__main__":
                 follow instructions of the tabs to make your \
                 recording in the next step.")
     
-    tab1, tab2, tab3 = st.tabs(['sentence', 'cough', 'exhalation'])
+    tab1, tab2 = st.tabs(['sentence', 'exhalation'])
 
     tab1.write("Record a sentence “I love nothing more than an \
                afternoon cream tea.” This sentence contains some key sounds \
@@ -210,21 +210,9 @@ if __name__ == "__main__":
                 making a ‘ha’ sound, as if you were trying to fog up a\
                 window, or see your breath in cold weather.")
 
-    tab3.write("Record a cough. Coughing is a potential risk to \
-                others around you. Make sure you are alone in a room or \
-                vehicle when coughing. For this recording, move an arm’s \
-                length away from your desktop computer, laptop, phone or \
-                tablet. Press the Record button, and cough, forcing a cough \
-                if it doesn’t come naturally. Use the Stop button to stop \
-                recording. You will see an audio player, which you can use \
-                to playback your recording. Cough once — with your desktop \
-                computer, laptop, phone or tablet an arm’s length away from \
-                you.")
-    
-
     inputs['modal'] = st.selectbox(
         'Modality', 
-        ['sentence', 'cough', 'exhalation']
+        ['sentence', 'exhalation']
     )
 
     st.text(' ')

@@ -1,13 +1,13 @@
 FROM mcr.microsoft.com/azureml/curated/minimal-ubuntu20.04-py38-cuda11.6.2-gpu-inference:13
 
-WORKDIR /ssast_ciab
+WORKDIR /workspace
 
-ADD . /ssast_ciab
+ADD . /workspace
 
 RUN pip install -r ssast_ciab/requirements.txt 
 
-CMD [ "streamlit" , "run" , "/workspace/app.py", "--server.address=0.0.0.0" ]
+CMD [ "streamlit" , "run" , "/workspace/main.py", "--server.address=0.0.0.0" ]
 
-RUN chown -R 42420:42420 /ssast_ciab
+RUN chown -R 42420:42420 /workspace
 
-ENV HOME=/ssast_ciab
+ENV HOME=/workspace
